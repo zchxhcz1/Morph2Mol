@@ -1,10 +1,10 @@
-# VOICE-25M
+# Histology-Based Reconstruction of Single-Cell Transcriptomics through multimodal foundation models
 
 Predict spatial single-cell gene expression from H&E images using an image encoder, a spatial decoder, and a reference bank of cells with measured expression.
 
 ## Resources
 
-- **Model:** [Hugging Face](https://huggingface.co/zchx/VOICE-25M)
+- **Model:** [Hugging Face](https://huggingface.co/zchx/VOICE)
 - **Paper:** [arXiv:2608.08366](https://arxiv.org/abs/2608.08366)
 
 ## Installation
@@ -12,8 +12,8 @@ Predict spatial single-cell gene expression from H&E images using an image encod
 Use Python 3.10 or later and install a PyTorch build suitable for your hardware.
 
 ```bash
-git clone https://github.com/zchxhcz1/VOICE-25M.git
-cd VOICE-25M
+git clone https://github.com/zchxhcz1/VOICE.git
+cd VOICE
 pip install -r requirements.txt
 ```
 
@@ -30,8 +30,8 @@ hf auth login
 python - <<'PYTHON'
 from huggingface_hub import snapshot_download, hf_hub_download
 
-model_dir = "models/voice25m"
-snapshot_download("zchx/VOICE-25M", local_dir=model_dir)
+model_dir = "models/voice"
+snapshot_download("zchx/VOICE", local_dir=model_dir)
 hf_hub_download("MahmoodLab/UNI2-h", "pytorch_model.bin", local_dir=f"{model_dir}/uni2h")
 PYTHON
 ```
@@ -45,7 +45,7 @@ Choose your own model, image and output locations in the commands below. Run pre
 ```bash
 python predict/predict.py \
   --image /path/to/slide.svs \
-  --release models/voice25m \
+  --release models/voice \
   --out results/prediction.h5ad
 ```
 
@@ -57,7 +57,7 @@ If the image does not contain physical resolution metadata, supply its actual mi
 
 ```bash
 python predict/predict.py --image /path/to/image.png --mpp 0.25 \
-  --release models/voice25m --out results/prediction.h5ad
+  --release models/voice --out results/prediction.h5ad
 ```
 
 `0.25` is an example. Use the resolution of your image. Prediction requires no measured expression or precomputed image features for the target slide.

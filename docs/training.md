@@ -6,7 +6,7 @@ Training consists of preparing RNA embeddings, aligning image and RNA features, 
 pip install -r requirements-train.txt
 ```
 
-Use CUDA for model training. Commands below support one GPU with `python` or multiple GPUs with `torchrun`. Both stages use the fixed three-epoch VOICE-25M recipe. Runtime options control paths, workers, checkpoint frequency, encoder chunk size and continuation.
+Use CUDA for model training. Commands below support one GPU with `python` or multiple GPUs with `torchrun`. Both stages use the fixed three-epoch VOICE recipe. Runtime options control paths, workers, checkpoint frequency, encoder chunk size and continuation.
 
 All paths below are examples; use your own data, model and output directories.
 
@@ -106,8 +106,8 @@ python train/export_release.py --uni2h /models/uni2h \
   --stage2 /runs/voice/checkpoints/expression/stage2_last.pt \
   --space /runs/voice/direct/gene_space_all.npz \
   --xenium-space /runs/voice/direct/gene_space_xen.npz \
-  --out /models/voice25m_direct
-python train/prepare_bank.py --release /models/voice25m_direct \
+  --out /models/voice_direct
+python train/prepare_bank.py --release /models/voice_direct \
   --dataset /data/corpus --references /data/corpus/splits/training_set.txt \
   --out /runs/reference_inputs
 python predict/build_bank.py --manifest /runs/reference_inputs/manifest.json \
@@ -121,7 +121,7 @@ Retrieval uses cosine similarity in the 1,536-dimensional image feature space, 5
 ## Fit fusion weights
 
 ```bash
-python train/fit_beta.py --release /models/voice25m_direct --bank /runs/bank \
+python train/fit_beta.py --release /models/voice_direct --bank /runs/bank \
   --dataset /data/corpus --references /data/corpus/splits/gate_fit_references.txt \
   --reference-inputs /runs/reference_inputs --out /runs/beta.json
 python train/export_release.py --uni2h /models/uni2h \
@@ -129,7 +129,7 @@ python train/export_release.py --uni2h /models/uni2h \
   --stage2 /runs/voice/checkpoints/expression/stage2_last.pt \
   --space /runs/voice/direct/gene_space_all.npz \
   --xenium-space /runs/voice/direct/gene_space_xen.npz \
-  --bank /runs/bank --beta /runs/beta.json --out /models/voice25m
+  --bank /runs/bank --beta /runs/beta.json --out /models/voice
 ```
 
 Fusion weights are fitted on reference slides, excluding each reference and related donor/block samples from its retrieval bank. Calibration uses up to 20,000 deterministically sampled cells per reference by default (`--max-cells`, `--seed`). Each gene's weight is selected from 41 values between 0 and 1 by prediction correlation with measured log1p expression, then averaged over eligible references with equal reference weight.

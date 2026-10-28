@@ -1,11 +1,11 @@
 # Model files
 
-Download the model from [Hugging Face](https://huggingface.co/zchx/VOICE-25M). Obtain `uni2h/pytorch_model.bin` separately through [MahmoodLab/UNI2-h](https://huggingface.co/MahmoodLab/UNI2-h), using an account with approved access.
+Download the model from [Hugging Face](https://huggingface.co/zchx/VOICE). Obtain `uni2h/pytorch_model.bin` separately through [MahmoodLab/UNI2-h](https://huggingface.co/MahmoodLab/UNI2-h), using an account with approved access.
 
 The complete directory used by `--release` contains:
 
 ```text
-voice25m/
+voice/
   release.json
   stage1.pt
   stage2.pt
@@ -33,7 +33,7 @@ python train/export_release.py \
   --space /runs/voice/direct/gene_space_all.npz \
   --xenium-space /runs/voice/direct/gene_space_xen.npz \
   --bank /runs/bank --beta /runs/beta.json \
-  --out /models/voice25m
+  --out /models/voice
 ```
 
 The destination must be empty. Omit both `--bank` and `--beta` when exporting the intermediate checkpoints used by reference preparation during model training. Follow the UNI2-h access and distribution terms when sharing model files.
