@@ -1,6 +1,7 @@
-"""Resolve corpus objects and tissue spellings without changing diagnoses."""
+"""Resolve corpus objects and read user-supplied organ annotations."""
 from pathlib import Path
 import csv
+import re
 
 
 def tissue_key(name):
@@ -18,9 +19,22 @@ def object_directory(dataset, sample):
     return next((p for p in matches if p.relative_to(root).parts[0] == "training_set"), matches[0])
 
 
-def tissue_of_object(dataset, sample, fold_case=True):
-    group = object_directory(dataset, sample).parent.name
-    return tissue_key(group) if fold_case else group
+def read_tissue_map(path):
+    """Read sample,tissue CSV; an empty tissue includes a reference only in global fitting."""
+    tissues = {}
+    with Path(path).open(newline='') as stream:
+        reader = csv.DictReader(stream)
+        if not {'sample', 'tissue'} <= set(reader.fieldnames or []):
+            raise ValueError('Tissue map requires sample and tissue columns')
+        for row in reader:
+            sample = (row['sample'] or '').strip()
+            tissue = tissue_key(row['tissue'])
+            if not sample or sample in tissues:
+                raise ValueError(f'Tissue map has an empty or duplicate sample: {sample!r}')
+            if tissue and not re.fullmatch(r'[a-z][a-z0-9_]*', tissue):
+                raise ValueError(f'Use a lowercase organ name with underscores: {tissue!r}')
+            tissues[sample] = tissue
+    return tissues
 
 
 EXCLUSION_FIELDS = ('donor_or_block_id',)

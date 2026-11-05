@@ -123,6 +123,7 @@ Retrieval uses cosine similarity in the 1,536-dimensional image feature space, 5
 ```bash
 python train/fit_beta.py --release /models/voice_direct --bank /runs/bank \
   --dataset /data/corpus --references /data/corpus/splits/gate_fit_references.txt \
+  --tissue-map /data/corpus/tissues.csv \
   --reference-inputs /runs/reference_inputs --out /runs/beta.json
 python train/export_release.py --uni2h /models/uni2h \
   --stage1 /runs/voice/checkpoints/alignment/stage1_final.pt \
@@ -134,4 +135,15 @@ python train/export_release.py --uni2h /models/uni2h \
 
 Fusion weights are fitted on reference slides, excluding each reference and related donor/block samples from its retrieval bank. Calibration uses up to 20,000 deterministically sampled cells per reference by default (`--max-cells`, `--seed`). Each gene's weight is selected from 41 values between 0 and 1 by prediction correlation with measured log1p expression, then averaged over eligible references with equal reference weight.
 
-Weights are grouped by tissue and panel width, using a 1,000-gene threshold and at least two references per group. Prediction first uses matching tissue and width, then another eligible width of the same tissue, then global weights. Tissue names are compared without case sensitivity. Target-slide expression is not used during prediction.
+Supply `--tissue-map` as a CSV with `sample,tissue` columns and one row for every fitting reference. Use canonical organ names such as `lung`, `colon`, `liver` and `ovary`; annotate each sample by its organ even when a source dataset contains several organs. Organ labels are supplied by the user rather than inferred from dataset or platform directory names. An empty `tissue` field includes that reference in the global fit only.
+
+```csv
+sample,tissue
+lung_reference_a,lung
+lung_reference_b,lung
+colon_reference_a,colon
+```
+
+Weights are grouped as `ORGAN/narrow` or `ORGAN/wide`, using a 1,000-measured-model-gene threshold. Every nonempty group is exported, including single-reference groups. Retrieval for fitting uses the full reference bank excluding the query reference and related donor/block samples, so a single reference of an organ still has other references available for retrieval. Per-gene weights are averaged equally across contributing reference slides within each group.
+
+Prediction first uses matching organ and width, then another available width of the same organ, then global weights. `--tissue lung/wide` fixes the width; `--tissue lung` selects width from the requested gene count. Organ names are compared without case sensitivity. Target-slide expression is not used during prediction.

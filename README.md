@@ -66,7 +66,7 @@ python predict/predict.py --image /path/to/image.png --mpp 0.25 \
 | --- | --- |
 | `--cells cells.npz` | Use existing cell boundaries instead of automatic segmentation |
 | `--prepared /path/to/slide` | Read prepared cell crops and boundaries instead of `--image` |
-| `--tissue xenium_lung` | Select tissue-specific fusion weights; omitted or unknown tissue uses global weights |
+| `--tissue lung/wide` | Select organ and panel-width fusion weights; `--tissue lung` selects width automatically |
 | `--genes all` | Predict all 18,580 model genes; this is the default |
 | `--genes genes.txt` | Predict an ordered list of gene symbols, one per line |
 | `--save-embeddings` | Save image and spatial features |
@@ -75,6 +75,14 @@ python predict/predict.py --image /path/to/image.png --mpp 0.25 \
 | `--sample-id SAMPLE --exclude RELATED_SAMPLE` | Exclude the target and related references when they occur in the bank |
 
 CUDA is the default device. CPU inference is available with `--device cpu --amp fp32`. Prediction matrices are written to disk in batches; output size scales with the number of cells and requested genes. Automatic segmentation produces nuclei; use supplied cell boundaries when available.
+
+## Fusion weights
+
+Fusion weights cover all 15 reference organs: bone, brain, breast, cervix, colon, heart, kidney, liver, lung, lymph_node, ovary, pancreas, prostate, skin and tonsil. The [model repository](https://huggingface.co/zchx/VOICE#fusion-weights) lists all 20 available organ/panel groups, including groups with one reference slide. Fitting retrieves from the other reference slides across tissues, excluding the query reference and its related donor/block samples.
+
+Groups use organ names such as `lung/narrow` and `lung/wide`. `narrow` means fewer than 1,000 measured model genes in the fitting reference; `wide` means at least 1,000. With an organ alone, width is selected from the number of requested output genes. Supply an explicit group to keep that choice fixed when changing the requested gene subset. A missing width uses another available width of the same organ; an omitted or unknown organ uses global weights.
+
+The model download includes the combined `beta.json` used automatically during prediction. Individual gene-weight tables are also available under `beta/ORGAN/WIDTH.json`. Global weights are fitted across the full reference set independently of organ grouping. No target expression is needed.
 
 ## Output
 

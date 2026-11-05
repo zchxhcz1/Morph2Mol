@@ -17,7 +17,7 @@ def parser():
     p.add_argument('--mpp', type=float, help='Microns per source pixel; required if absent from slide metadata')
     p.add_argument('--release', required=True, help='Portable model directory containing release.json')
     p.add_argument('--out', required=True, help='Output .h5ad; matrices are streamed to disk')
-    p.add_argument('--tissue', default='', help='Tissue key for fusion weights; omitted or unknown uses global weights')
+    p.add_argument('--tissue', default='', help='Organ or organ/width, e.g. lung or lung/wide; omitted or unknown uses global weights')
     p.add_argument('--genes', default='all', help='all, xenium, or a text file of gene symbols (one per line)')
     p.add_argument('--device', default='cuda')
     p.add_argument('--amp', choices=['bf16', 'fp16', 'fp32'], default='bf16')

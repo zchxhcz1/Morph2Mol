@@ -13,6 +13,11 @@ voice/
   xenium_genes.tsv
   beta.json
   beta.meta.json
+  beta/
+    manifest.json
+    lung/narrow.json
+    lung/wide.json
+    ...
   uni2h/pytorch_model.bin
   bank/
     model.json
@@ -22,6 +27,8 @@ voice/
 ```
 
 `release.json` supplies relative paths to the model files. Keep the checkpoints, gene information, fusion weights, and bank together. `genes.tsv` and `xenium_genes.tsv` in this source repository list model gene symbols, one per line without a header.
+
+The root `beta.json` contains all organ/panel groups and global fallback weights and is used automatically by prediction. `beta/manifest.json` lists each available group, reference count, fitted-gene count, and checksum; `beta/ORGAN/WIDTH.json` contains the corresponding gene-wise weights. Select a group with `--tissue lung/wide` or supply an organ such as `--tissue lung` for automatic width selection.
 
 To package a newly trained model:
 
