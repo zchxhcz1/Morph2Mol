@@ -8,8 +8,8 @@ import numpy as np
 import torch
 from scipy.spatial import cKDTree
 from torch.utils.data import Dataset
-from voice.full_coverage import partition_cells, halo_cells, REVISION
-from voice.recipe import TARGET_CELLS, CONTEXT_CELLS, RADIUS_UM, SEED
+from morph2mol.full_coverage import partition_cells, halo_cells, REVISION
+from morph2mol.recipe import TARGET_CELLS, CONTEXT_CELLS, RADIUS_UM, SEED
 
 
 class TargetContextPlan:

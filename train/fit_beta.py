@@ -19,11 +19,11 @@ def main():
     if a.batch_size<1 or a.max_cells<0:raise ValueError('Invalid fitting batch or sample size')
     import numpy as np
     import h5py
-    from voice.release import Release
-    from voice.retrieval import ReferenceBank,sha
-    from voice.gate import fit_beta,_fit_eligible
-    from voice.training_contract import read_ids,dataset_contract,gene_hash
-    from voice.tissue import reference_exclusions,read_tissue_map
+    from morph2mol.release import Release
+    from morph2mol.retrieval import ReferenceBank,sha
+    from morph2mol.gate import fit_beta,_fit_eligible
+    from morph2mol.training_contract import read_ids,dataset_contract,gene_hash
+    from morph2mol.tissue import reference_exclusions,read_tissue_map
     from predict.spatial_context import prediction_protocol,check_prediction_protocol
     release=Release(a.release,retrieval=False)
     genes=np.load(release.paths['gene_space'],allow_pickle=False)['genes'].astype(str).tolist()
@@ -43,13 +43,14 @@ def main():
         # Gate labels are measured log1p counts, whereas Y.npy is bank z-expression.
         from scipy import sparse
         import pandas as pd
-        from voice.tissue import object_directory
+        from morph2mol.tissue import object_directory
         d=object_directory(a.dataset,sample)
         symbols=pd.read_csv(d/'genes.tsv',sep='\t').iloc[:,0].astype(str).tolist()
         columns=[symbols.index(genes[int(g)]) for g in panel]
         with h5py.File(work/'direct.h5ad','r') as h:
             from anndata.io import read_elem
-            info=read_elem(h['uns/voice25m'])
+            from morph2mol.prediction_io import prediction_metadata, phase1_features
+            info=prediction_metadata(h)
             check_prediction_protocol(info['spatial_context'])
             if info['stage1_sha256']!=release.hashes['stage1'] or info['stage2_sha256']!=release.hashes['stage2']:
                 raise ValueError('Reference direct predictions belong to another model')
@@ -58,7 +59,7 @@ def main():
             take=(np.sort(rng.choice(len(er),a.max_cells,replace=False))
                   if a.max_cells and len(er)>a.max_cells else np.arange(len(er)))
             er=er[take]
-            A=h['layers/A'][take].astype(np.float32);H=h['obsm/X_voice_phase1'][take]
+            A=h['layers/A'][take].astype(np.float32);H=phase1_features(h)[take]
             if not np.array_equal(read_elem(h['var'])['global_gene_id'].to_numpy(),panel):
                 raise ValueError('Reference prediction columns do not match panel')
         counts=sparse.load_npz(d/'expression.npz').tocsr()[er][:,columns].astype(np.float32)

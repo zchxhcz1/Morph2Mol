@@ -11,17 +11,17 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader
 from PIL import Image
 from pathlib import Path
-from voice.encoder import build_uni2_local
-from voice.training import contrastive as C
-from voice.training.cell_inputs import cells_of
-from voice.training_contract import (dataset_contract, check_members, check_checkpoint,
+from morph2mol.encoder import build_uni2_local
+from morph2mol.training import contrastive as C
+from morph2mol.training.cell_inputs import cells_of
+from morph2mol.training_contract import (dataset_contract, check_members, check_checkpoint,
     gene_hash, checkpoint_identity, load_lora_checked)
-from voice.training_resume import (check_stage2_resume, capture_rng_per_rank, restore_main_rng, atomic_torch_save)
-from voice.tissue import object_directory
-from voice.full_coverage import CoveragePlan, FullCoverageDataset, supervised_sums, REVISION
-from voice.head import DirectHead, nb_nll, cell_areas
-from voice.se2 import SpatialTransformer
-from voice.recipe import stage2_settings
+from morph2mol.training_resume import (check_stage2_resume, capture_rng_per_rank, restore_main_rng, atomic_torch_save)
+from morph2mol.tissue import object_directory
+from morph2mol.full_coverage import CoveragePlan, FullCoverageDataset, supervised_sums, REVISION
+from morph2mol.head import DirectHead, nb_nll, cell_areas
+from morph2mol.se2 import SpatialTransformer
+from morph2mol.recipe import stage2_settings
 
 class LiveStore:
     """All effective cells of one slide, with images, masks, counts and micron positions."""
@@ -40,7 +40,7 @@ class LiveStore:
         ums = float(json.load(open(f"{d}/dataset.json"))["um_per_pixel_source"])
         pos = pos_px * ums                                            # -> microns
         if cache:
-            from voice.training_cache import cached_arrays, file_stamp, array_stamp
+            from morph2mol.training_cache import cached_arrays, file_stamp, array_stamp
             signature={'boundaries':file_stamp(f'{d}/patch_cell_boundaries.npz'),
                        'mask':file_stamp(cm) if os.path.exists(cm) else None,
                        'rows':array_stamp(er),'max_cells':0,'schema':1}
@@ -58,7 +58,7 @@ class LiveStore:
                 seen.add(g); cols.append(j); hidx.append(head[g])
         self.head_idx = np.asarray(hidx, np.int64)
         if cache:
-            from voice.training_cache import sparse_targets
+            from morph2mol.training_cache import sparse_targets
             self.y=sparse_targets(f'{cache}/stage2/{obj}/targets',X,er,np.asarray(cols,np.int64),
                                   {'expression':file_stamp(f'{d}/expression.npz'),
                                    'genes':file_stamp(f'{d}/genes.tsv'),'schema':1})

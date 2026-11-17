@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 The VOICE authors
+Copyright (c) 2026 The Morph2Mol authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,5 +25,5 @@ Third-party components
 
 UNI2-h (MahmoodLab) is downloaded separately by the user under its own licence, which
 restricts commercial use and requires accepting the model card's terms.
-voice/_se2_arch.py and voice/head.py contain the SE(2)-equivariant decoder and the
+morph2mol/_se2_arch.py and morph2mol/head.py contain the SE(2)-equivariant decoder and the
 negative-binomial head contributed by Yicheng Tao as part of this work.

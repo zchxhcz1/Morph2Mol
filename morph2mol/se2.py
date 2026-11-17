@@ -1,7 +1,7 @@
 """Six spatial attention layers using pairwise distances in microns."""
 import torch
 from torch import nn
-from voice._se2_arch import SE2Layer, GaussianModule
+from morph2mol._se2_arch import SE2Layer, GaussianModule
 
 
 class SpatialTransformer(nn.Module):

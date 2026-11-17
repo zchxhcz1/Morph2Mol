@@ -19,10 +19,10 @@ def main():
     import numpy as np
     import pandas as pd
     from scipy import sparse
-    from voice.release import Release
-    from voice.bank_io import FEATURE_PROTOCOL,VALUE_PROTOCOL,write_json
-    from voice.training_contract import read_ids,dataset_contract
-    from voice.tissue import object_directory
+    from morph2mol.release import Release
+    from morph2mol.bank_io import FEATURE_PROTOCOL,VALUE_PROTOCOL,write_json
+    from morph2mol.training_contract import read_ids,dataset_contract
+    from morph2mol.tissue import object_directory
     release=Release(a.release,retrieval=False);out=Path(a.out).resolve();out.mkdir(parents=True,exist_ok=True)
     genes=np.load(release.paths['gene_space'],allow_pickle=False)['genes'].astype(str)
     lookup={g:i for i,g in enumerate(genes)}
@@ -46,11 +46,13 @@ def main():
         with h5py.File(prediction,'r') as h:
             from anndata.io import read_elem
             from predict.spatial_context import check_prediction_protocol
-            check_prediction_protocol(read_elem(h['uns/voice25m'])['spatial_context'])
-            if not h.attrs.get('complete') or h['uns/voice25m/stage1_sha256'].asstr()[()]!=release.hashes['stage1']:
+            from morph2mol.prediction_io import prediction_metadata, phase1_features
+            info=prediction_metadata(h)
+            check_prediction_protocol(info['spatial_context'])
+            if not h.attrs.get('complete') or info['stage1_sha256']!=release.hashes['stage1']:
                 raise ValueError('Cached reference predictions do not match this release')
             er=h['obs/cell_id'].asstr()[:].astype(np.int64)
-            np.save(work/'E.npy',h['obsm/X_voice_phase1'][:])
+            np.save(work/'E.npy',phase1_features(h)[:])
         matrix=sparse.load_npz(d/'expression.npz').tocsr()[er][:,cols]
         # Match the original bank: population z-score log1p counts, sd floor 1e-3, fp16 before cluster means.
         log=matrix.astype(np.float32);log.data=np.log1p(log.data)

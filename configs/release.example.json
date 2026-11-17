@@ -1,5 +1,5 @@
 {
-  "schema": "voice25m-release-v1",
+  "schema": "morph2mol-release-v1",
   "uni2h": "uni2h",
   "stage1": "stage1.pt",
   "stage2": "stage2.pt",

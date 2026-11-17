@@ -5,7 +5,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 from torch.utils.data import Dataset
 import torch
-from voice.training_cache import cached_arrays, array_stamp
+from morph2mol.training_cache import cached_arrays, array_stamp
 
 
 REVISION='full_coverage_halo_v1'

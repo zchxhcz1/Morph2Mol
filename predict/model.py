@@ -3,14 +3,14 @@ from contextlib import nullcontext
 import numpy as np
 import torch
 from torch import nn
-from voice.encoder import build_uni2_local, inject_lora, pooled_feat, MEAN, STD
-from voice.head import DirectHead
-from voice.se2 import SpatialTransformer
-from voice.recipe import check_stage2_settings
-from voice.training_contract import load_lora_checked, gene_hash
+from morph2mol.encoder import build_uni2_local, inject_lora, pooled_feat, MEAN, STD
+from morph2mol.head import DirectHead
+from morph2mol.se2 import SpatialTransformer
+from morph2mol.recipe import check_stage2_settings
+from morph2mol.training_contract import load_lora_checked, gene_hash
 
 
-class Voice25M:
+class Morph2Mol:
     def __init__(self, release, device='cuda', amp='bf16'):
         self.device = torch.device(device)
         self.amp = amp
@@ -66,3 +66,7 @@ class Voice25M:
         z = self.se2(self.inp(features), positions)
         mu = self.head(z, area_abs, area_rel, gene_ids)
         return torch.log1p(mu), z
+
+
+# Compatibility for existing inference adapters.
+Voice25M = Morph2Mol

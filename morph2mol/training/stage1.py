@@ -8,12 +8,12 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader, Dataset
-from voice.training import contrastive as C
-from voice.encoder import build_uni2_local
-from voice.recipe import stage1_settings
-from voice.clip_coverage import TailDataset, ResumeTailSampler
-from voice.training_contract import dataset_contract, check_members, stage1_steps
-from voice.training_resume import (Stage1Cursor, stage1_data_identity, check_stage1_resume,
+from morph2mol.training import contrastive as C
+from morph2mol.encoder import build_uni2_local
+from morph2mol.recipe import stage1_settings
+from morph2mol.clip_coverage import TailDataset, ResumeTailSampler
+from morph2mol.training_contract import dataset_contract, check_members, stage1_steps
+from morph2mol.training_resume import (Stage1Cursor, stage1_data_identity, check_stage1_resume,
     restore_stage1_weights, capture_rng_per_rank, restore_main_rng, atomic_torch_save, STAGE1_REVISION)
 
 def target_path(slide, embedding_root, n_expr=None):
@@ -42,7 +42,7 @@ def training_slides(dataset, embedding_root, contract):
 
 
 def build_data(slides, embedding_root, cache_root):
-    from voice.training_cache import cached_arrays, file_stamp, JoinedArrays
+    from morph2mol.training_cache import cached_arrays, file_stamp, JoinedArrays
     arrays = []
     for name,directory in slides:
         target = target_path(name, embedding_root)

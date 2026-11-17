@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.distributed as dist
 
-from voice.training_contract import check_checkpoint, load_lora_checked
+from morph2mol.training_contract import check_checkpoint, load_lora_checked
 
 STAGE1_REVISION = 'stage1_cursor_v1'
 STAGE1_RECIPE = ['optimizer', 'target', 'loss', 'epochs', 'max_cells', 'eff_batch', 'chunk',
@@ -146,7 +146,7 @@ def check_stage2_resume(ck, args, contract, genes, stage1_identity, world, cover
     check_recipe(ck, args, STAGE2_RECIPE)
     if not 0 <= int(ck['step']) <= coverage.total_steps:
         raise ValueError('Resume checkpoint exceeds the fixed epoch budget')
-    from voice.full_coverage import REVISION
+    from morph2mol.full_coverage import REVISION
     expected = [coverage.supervised_before(int(ck['step']),r) for r in range(world)]
     if ck['coverage_revision'] != REVISION or ck['supervised_cells_per_rank'] != expected:
         raise ValueError('Resume coverage plan/count differs from the checkpoint')

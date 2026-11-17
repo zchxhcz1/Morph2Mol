@@ -1,4 +1,4 @@
-"""scGPT encoder used to prepare VOICE-25M RNA targets; see LICENSE and NOTICE.md."""
+"""scGPT encoder used to prepare Morph2Mol-25M RNA targets; see LICENSE and NOTICE.md."""
 from typing import Optional
 import torch
 from torch import nn, Tensor

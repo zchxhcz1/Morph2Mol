@@ -47,7 +47,7 @@ def main(argv=None, *, reference=False):
     if not a.overwrite and (out.exists() or partial.exists()):
         raise FileExistsError(f'Output/partial exists: {out}; choose a new path or --overwrite')
     out.parent.mkdir(parents=True, exist_ok=True)
-    from voice.release import Release
+    from morph2mol.release import Release
     release = Release(a.release, retrieval=not reference)
     if a.image and not a.cells:
         from predict.slide_io import SlideReader
@@ -75,21 +75,21 @@ def main(argv=None, *, reference=False):
     import pandas as pd
     import torch
     from anndata.io import write_elem
-    from predict.model import Voice25M
+    from predict.model import Morph2Mol
     from predict.inputs import open_slide
     from predict.covariates import geometry
     from torch.utils.data import DataLoader
     from predict.spatial_context import TargetContextPlan, TargetContextDataset, commit_target_rows
-    from voice.gate import apply_gate
-    from voice.gate_rules import select_gate, validate_gate_genes
-    from voice.retrieval import ReferenceBank
+    from morph2mol.gate import apply_gate
+    from morph2mol.gate_rules import select_gate, validate_gate_genes
+    from morph2mol.retrieval import ReferenceBank
     src = open_slide(a.image, a.cells, a.prepared, a.mpp)
     if not len(src):
         raise ValueError('No cells in input')
     if len(set(src.ids.tolist())) != len(src):
         raise ValueError('Cell identifiers must be unique')
     pos_um, aa, ar, mpp = geometry(src, a.mpp)
-    model = Voice25M(release, a.device, a.amp)
+    model = Morph2Mol(release, a.device, a.amp)
     genes = model.genes
     if a.genes == 'all':
         names = genes.tolist()
@@ -114,7 +114,7 @@ def main(argv=None, *, reference=False):
     obs = pd.DataFrame({'y_pixel':src.pos[:,0], 'x_pixel':src.pos[:,1],
                         'y_um':pos_um[:,0], 'x_um':pos_um[:,1]},
                        index=pd.Index(src.ids.astype(str),name='cell_id'))
-    info = {'model':'VOICE-25M-scGPT', 'stage1_sha256':release.hashes['stage1'],
+    info = {'model':'Morph2Mol-25M-scGPT', 'stage1_sha256':release.hashes['stage1'],
             'stage2_sha256':release.hashes['stage2'], 'gene_space_sha256':release.hashes['gene_space'],
             'mpp':mpp, 'crop_um':55., 'spatial_context':plan.metadata(), 'gate_source':source,
             'tissue':a.tissue, 'source':src.kind, 'amp':a.amp, 'spatial_order':'x,y in source pixels',
@@ -134,11 +134,11 @@ def main(argv=None, *, reference=False):
             ds.attrs.update({'encoding-type':'array','encoding-version':'0.2.0'})
             return ds
         A = matrix(h['layers'],'A',(n,g))
-        H1 = matrix(h['obsm'],'X_voice_phase1',(n,1536),'float16') if not reference or a.save_embeddings else None
+        H1 = matrix(h['obsm'],'X_morph2mol_phase1',(n,1536),'float16') if not reference or a.save_embeddings else None
         X = matrix(h,'X',(n,g))
         if a.save_embeddings:
-            H2 = matrix(h['obsm'],'X_voice_stage2',(n,1536),'float16')
-            Z = matrix(h['obsm'],'X_voice_se2',(n,model.args['d_model']),'float16')
+            H2 = matrix(h['obsm'],'X_morph2mol_stage2',(n,1536),'float16')
+            Z = matrix(h['obsm'],'X_morph2mol_se2',(n,model.args['d_model']),'float16')
         loader = DataLoader(TargetContextDataset(src, plan), batch_size=None, num_workers=a.workers,
                             pin_memory=model.device.type == 'cuda')
         written = np.zeros(n, np.uint8)
@@ -193,8 +193,8 @@ def main(argv=None, *, reference=False):
         del h['var']; write_elem(h,'var',var)
         write_elem(h['obsm'],'spatial',src.pos[:,::-1].copy())
         if H1 is not None and not a.save_embeddings:
-            del h['obsm']['X_voice_phase1']
-        write_elem(h['uns'],'voice25m',info)
+            del h['obsm']['X_morph2mol_phase1']
+        write_elem(h['uns'],'morph2mol',info)
         h.attrs['complete'] = True
         h.flush()
     os.replace(partial,out)

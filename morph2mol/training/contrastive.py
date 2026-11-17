@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import Dataset
 from PIL import Image, ImageDraw
-from voice.encoder import inject_lora, pooled_feat, MEAN, STD
+from morph2mol.encoder import inject_lora, pooled_feat, MEAN, STD
 TEMP=0.07
 AMP_DTYPE=torch.bfloat16
 dev=torch.device('cuda')

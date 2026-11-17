@@ -1,4 +1,4 @@
-"""The training and spatial prediction settings used by VOICE-25M."""
+"""The training and spatial prediction settings used by Morph2Mol-25M."""
 from argparse import Namespace
 
 EPOCHS = 3
@@ -36,4 +36,4 @@ def stage2_settings(**runtime):
 def check_stage2_settings(args):
     for key, value in vars(stage2_settings()).items():
         if args.get(key) != value:
-            raise ValueError(f'Checkpoint does not use the VOICE-25M setting: {key}={value}')
+            raise ValueError(f'Checkpoint does not use the Morph2Mol-25M setting: {key}={value}')

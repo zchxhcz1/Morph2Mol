@@ -7,7 +7,7 @@ import json
 import os
 import numpy as np
 
-SCHEMA = 'voice25m-reference-bank'
+SCHEMA = 'morph2mol-reference-bank'
 FEATURE_PROTOCOL = 'masked_cell_features'
 VALUE_PROTOCOL = 'standardized_log_expression'
 ARTIFACTS = ('keys', 'values', 'panel', 'counts', 'labels', 'PCA_mean',

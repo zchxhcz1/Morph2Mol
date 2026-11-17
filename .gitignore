@@ -20,3 +20,6 @@ hf_cache/
 *.lock
 weights/uni2h/
 weights/scgpt_human/
+
+# Website source is maintained in a separate private repository.
+/web/

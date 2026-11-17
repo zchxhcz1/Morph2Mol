@@ -2,7 +2,7 @@ from typing import Union
 import logging
 import numpy as np
 import torch
-logger=logging.getLogger("voice.scgpt")
+logger=logging.getLogger("morph2mol.scgpt")
 def _digitize(x: np.ndarray, bins: np.ndarray, side="both") -> np.ndarray:
     """
     Digitize the data into bins. This method spreads data uniformly when bins

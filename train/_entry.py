@@ -4,7 +4,7 @@ import argparse
 
 
 def arguments(stage, argv=None):
-    p = argparse.ArgumentParser(description=f'Train VOICE-25M stage {stage} for three epochs')
+    p = argparse.ArgumentParser(description=f'Train Morph2Mol-25M stage {stage} for three epochs')
     p.add_argument('--dataset', required=True, help='Prepared paired corpus; see docs/training.md')
     p.add_argument('--work-dir', required=True, help='Output directory for checkpoints and caches')
     p.add_argument('--uni2h', required=True, help='Local UNI2-h weights directory')

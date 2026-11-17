@@ -7,8 +7,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, str(__import__("pathlib").Path(HERE).parent))
 import numpy as np, pandas as pd, scipy.sparse as sp, torch
 
-from voice.scgpt_backend.model import TransformerModel        # noqa: E402
-from voice.scgpt_backend.data_collator import DataCollator          # noqa: E402
+from morph2mol.scgpt_backend.model import TransformerModel        # noqa: E402
+from morph2mol.scgpt_backend.data_collator import DataCollator          # noqa: E402
 
 log = lambda *x: print(*x, flush=True)
 

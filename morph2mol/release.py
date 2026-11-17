@@ -1,14 +1,14 @@
 """Portable release paths and identities. No training corpus is required at inference."""
 from pathlib import Path
 import json
-from voice.retrieval import sha
+from morph2mol.retrieval import sha
 
 
 class Release:
     def __init__(self, directory, retrieval=True):
         self.root = Path(directory).resolve()
         self.config = json.loads((self.root / 'release.json').read_text())
-        if self.config.get('schema') != 'voice25m-release-v1':
+        if self.config.get('schema') not in ('morph2mol-release-v1', 'voice25m-release-v1'):
             raise ValueError('Unsupported release.json schema')
         self.paths = {}
         fields = ['uni2h', 'stage1', 'stage2', 'gene_space']

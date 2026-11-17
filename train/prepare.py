@@ -15,7 +15,7 @@ def main():
     a=p.parse_args()
     import numpy as np
     import pandas as pd
-    from voice.training_contract import dataset_contract
+    from morph2mol.training_contract import dataset_contract
     root=Path(a.dataset).resolve(); work=Path(a.work_dir).resolve()/'direct'
     work.mkdir(parents=True,exist_ok=True)
     contract=dataset_contract(root)
@@ -24,7 +24,7 @@ def main():
     if emb.ndim!=2 or emb.shape[1]!=512 or len(emb)!=len(genes) or len(set(genes))!=len(genes) or not np.isfinite(emb).all():
         raise ValueError('Invalid gene embedding table')
     objects=[]; platforms=[]; splits=[]; masks=[]; xenium=set()
-    from voice.tissue import object_directory
+    from morph2mol.tissue import object_directory
     for obj in contract['training_set']+contract['cross_slide_test_set']:
         d=object_directory(root,obj)
         meta=json.loads((d/'dataset.json').read_text())

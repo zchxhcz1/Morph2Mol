@@ -6,7 +6,7 @@ Training consists of preparing RNA embeddings, aligning image and RNA features, 
 pip install -r requirements-train.txt
 ```
 
-Use CUDA for model training. Commands below support one GPU with `python` or multiple GPUs with `torchrun`. Both stages use the fixed three-epoch VOICE recipe. Runtime options control paths, workers, checkpoint frequency, encoder chunk size and continuation.
+Use CUDA for model training. Commands below support one GPU with `python` or multiple GPUs with `torchrun`. Both stages use the fixed three-epoch Morph2Mol recipe. Runtime options control paths, workers, checkpoint frequency, encoder chunk size and continuation.
 
 All paths below are examples; use your own data, model and output directories.
 
@@ -47,19 +47,19 @@ The extractor uses nonzero genes, a classification token, 51 expression bins, at
 Create the ordered gene-embedding table and model gene space:
 
 ```bash
-python train/build_gene_table.py --genes weights/genes.tsv \
+python train/build_gene_table.py --dataset /data/corpus \
   --scgpt-dir /models/scgpt_human --out /runs/gene_table.npz
-python train/prepare.py --dataset /data/corpus --work-dir /runs/voice \
+python train/prepare.py --dataset /data/corpus --work-dir /runs/morph2mol \
   --gene-table /runs/gene_table.npz
 ```
 
-Gene embeddings use scGPT's embedding layer followed by encoder layer normalization. Symbols are matched exactly, then without case sensitivity. Genes outside the vocabulary start with zero embeddings and can be learned by the expression head. A different ordered gene list requires a corresponding model head, bank, and fitted fusion weights.
+The gene list is the sorted union of genes measured in the training split. Held-out slides do not contribute genes. Gene embeddings use scGPT's embedding layer followed by encoder layer normalization. Symbols are matched exactly, then without case sensitivity. Genes outside the vocabulary remain in the output space, start with zero embeddings and can be learned by the expression head. To reproduce an existing gene head, use `--genes weights/genes.tsv` instead of `--dataset`. A different ordered gene list requires a corresponding model head, bank, and fitted fusion weights.
 
 ## Align image and RNA features
 
 ```bash
 torchrun --standalone --nproc_per_node=3 train/train_phase1.py \
-  --dataset /data/corpus --work-dir /runs/voice \
+  --dataset /data/corpus --work-dir /runs/morph2mol \
   --uni2h /models/uni2h --cell-embeddings /runs/scgpt_cells
 ```
 
@@ -73,14 +73,14 @@ torchrun --standalone --nproc_per_node=3 train/train_phase1.py \
 | Augmentation | Random rotations and reflections |
 | Batch | 2,048 cells per rank, encoder chunks of 256 |
 
-Output: `/runs/voice/checkpoints/alignment/stage1_final.pt`. Adjust `--chunk` for your hardware; it must divide the fixed effective batch size of 2,048 cells per rank. `--resume` restores weights, optimizer state, and data position; use the same world size and corpus when resuming.
+Output: `/runs/morph2mol/checkpoints/alignment/stage1_final.pt`. Adjust `--chunk` for your hardware; it must divide the fixed effective batch size of 2,048 cells per rank. `--resume` restores weights, optimizer state, and data position; use the same world size and corpus when resuming.
 
 ## Train expression prediction
 
 ```bash
 torchrun --standalone --nproc_per_node=3 train/train_phase2.py \
-  --dataset /data/corpus --work-dir /runs/voice --uni2h /models/uni2h \
-  --stage1 /runs/voice/checkpoints/alignment/stage1_final.pt
+  --dataset /data/corpus --work-dir /runs/morph2mol --uni2h /models/uni2h \
+  --stage1 /runs/morph2mol/checkpoints/alignment/stage1_final.pt
 ```
 
 | Setting | Value |
@@ -94,7 +94,7 @@ torchrun --standalone --nproc_per_node=3 train/train_phase2.py \
 | Encoder updates | First 3 adapted blocks frozen; remaining adapters trainable |
 | Augmentation | Disabled during expression training |
 
-Output: `/runs/voice/checkpoints/expression/stage2_last.pt`. Each epoch rotates and shifts the spatial partition, rebuilds target blocks, and shuffles their order. Every usable target cell contributes loss exactly once per epoch. Context cells participate in spatial attention but do not contribute expression loss. Each slide supervises only its measured genes. Gradient checkpointing is enabled; `--resume` restores the complete training state. Prediction reuses the same target partition and neighbor-selection functions with a fixed seed and partition epoch.
+Output: `/runs/morph2mol/checkpoints/expression/stage2_last.pt`. Each epoch rotates and shifts the spatial partition, rebuilds target blocks, and shuffles their order. Every usable target cell contributes loss exactly once per epoch. Context cells participate in spatial attention but do not contribute expression loss. Each slide supervises only its measured genes. Gradient checkpointing is enabled; `--resume` restores the complete training state. Prediction reuses the same target partition and neighbor-selection functions with a fixed seed and partition epoch.
 
 ## Build the reference bank
 
@@ -102,12 +102,12 @@ Package the intermediate model, encode the image-alignment training slides, and 
 
 ```bash
 python train/export_release.py --uni2h /models/uni2h \
-  --stage1 /runs/voice/checkpoints/alignment/stage1_final.pt \
-  --stage2 /runs/voice/checkpoints/expression/stage2_last.pt \
-  --space /runs/voice/direct/gene_space_all.npz \
-  --xenium-space /runs/voice/direct/gene_space_xen.npz \
-  --out /models/voice_direct
-python train/prepare_bank.py --release /models/voice_direct \
+  --stage1 /runs/morph2mol/checkpoints/alignment/stage1_final.pt \
+  --stage2 /runs/morph2mol/checkpoints/expression/stage2_last.pt \
+  --space /runs/morph2mol/direct/gene_space_all.npz \
+  --xenium-space /runs/morph2mol/direct/gene_space_xen.npz \
+  --out /models/morph2mol_direct
+python train/prepare_bank.py --release /models/morph2mol_direct \
   --dataset /data/corpus --references /data/corpus/splits/training_set.txt \
   --out /runs/reference_inputs
 python predict/build_bank.py --manifest /runs/reference_inputs/manifest.json \
@@ -121,16 +121,16 @@ Retrieval uses cosine similarity in the 1,536-dimensional image feature space, 5
 ## Fit fusion weights
 
 ```bash
-python train/fit_beta.py --release /models/voice_direct --bank /runs/bank \
+python train/fit_beta.py --release /models/morph2mol_direct --bank /runs/bank \
   --dataset /data/corpus --references /data/corpus/splits/gate_fit_references.txt \
   --tissue-map /data/corpus/tissues.csv \
   --reference-inputs /runs/reference_inputs --out /runs/beta.json
 python train/export_release.py --uni2h /models/uni2h \
-  --stage1 /runs/voice/checkpoints/alignment/stage1_final.pt \
-  --stage2 /runs/voice/checkpoints/expression/stage2_last.pt \
-  --space /runs/voice/direct/gene_space_all.npz \
-  --xenium-space /runs/voice/direct/gene_space_xen.npz \
-  --bank /runs/bank --beta /runs/beta.json --out /models/voice
+  --stage1 /runs/morph2mol/checkpoints/alignment/stage1_final.pt \
+  --stage2 /runs/morph2mol/checkpoints/expression/stage2_last.pt \
+  --space /runs/morph2mol/direct/gene_space_all.npz \
+  --xenium-space /runs/morph2mol/direct/gene_space_xen.npz \
+  --bank /runs/bank --beta /runs/beta.json --out /models/morph2mol
 ```
 
 Fusion weights are fitted on reference slides, excluding each reference and related donor/block samples from its retrieval bank. Calibration uses up to 20,000 deterministically sampled cells per reference by default (`--max-cells`, `--seed`). Each gene's weight is selected from 41 values between 0 and 1 by prediction correlation with measured log1p expression, then averaged over eligible references with equal reference weight.

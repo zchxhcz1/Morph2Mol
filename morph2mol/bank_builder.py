@@ -7,8 +7,8 @@ import time
 import numpy as np
 import torch
 import torch.nn.functional as F
-from voice.retrieval import read_array, sha, signature, original_keys
-from voice.bank_io import (ARTIFACTS, SCHEMA, close_array, exclusive, fingerprint,
+from morph2mol.retrieval import read_array, sha, signature, original_keys
+from morph2mol.bank_io import (ARTIFACTS, SCHEMA, close_array, exclusive, fingerprint,
                       require, validate_feature, write_json)
 
 

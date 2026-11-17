@@ -1,4 +1,4 @@
-"""Bin, sample and pad scGPT cell tokens using the VOICE-25M extraction settings."""
+"""Bin, sample and pad scGPT cell tokens using the Morph2Mol-25M extraction settings."""
 import torch
 from .preprocess import binning
 

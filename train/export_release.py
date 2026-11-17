@@ -12,9 +12,9 @@ def export_weights(stage1, stage2, space, out):
     """Save inference tensors without optimizer state or training-machine paths."""
     import torch
     import numpy as np
-    from voice.recipe import stage2_settings,check_stage2_settings
-    from voice.training_contract import gene_hash
-    from voice.retrieval import sha
+    from morph2mol.recipe import stage2_settings,check_stage2_settings
+    from morph2mol.training_contract import gene_hash
+    from morph2mol.retrieval import sha
     first = torch.load(stage1, map_location='cpu', weights_only=False)
     second = torch.load(stage2, map_location='cpu', weights_only=False)
     check_stage2_settings(second['args'])
@@ -39,11 +39,11 @@ def main():
         p.add_argument('--'+key,required=True)
     p.add_argument('--bank');p.add_argument('--beta',dest='gate');p.add_argument('--xenium-space')
     a=p.parse_args()
-    from voice.retrieval import sha
+    from morph2mol.retrieval import sha
     out=Path(a.out).resolve()
     out.mkdir(parents=True,exist_ok=True)
     if any(out.iterdir()):raise ValueError('Export directory must be empty')
-    config={'schema':'voice25m-release-v1','uni2h':'uni2h','stage1':'stage1.pt',
+    config={'schema':'morph2mol-release-v1','uni2h':'uni2h','stage1':'stage1.pt',
             'stage2':'stage2.pt','gene_space':'gene_space.npz'}
     export_weights(a.stage1, a.stage2, a.space, out)
     shutil.copytree(a.uni2h,out/'uni2h')
@@ -60,7 +60,7 @@ def main():
         config['xenium_genes']='xenium_genes.tsv'
     config['sha256']={k:sha(out/config[k]) for k in ['stage1','stage2','gene_space']}
     (out/'release.json').write_text(json.dumps(config,indent=2)+'\n')
-    from voice.release import Release
+    from morph2mol.release import Release
     Release(out,retrieval=bool(a.bank))
     print(out)
 

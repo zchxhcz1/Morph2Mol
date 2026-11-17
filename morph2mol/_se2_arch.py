@@ -1,4 +1,4 @@
-"""VOICE SE(2) distance attention, as used by the 25M checkpoint."""
+"""Morph2Mol SE(2) distance attention, as used by the 25M checkpoint."""
 import math
 import torch
 from torch import nn

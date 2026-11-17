@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "voice25m"
-version = "0.2.0"
-description = "VOICE-25M: single-cell gene expression prediction from H&E images"
+name = "morph2mol"
+version = "0.3.0"
+description = "Morph2Mol: A Foundation Model for Predicting Single-Cell Spatial Transcriptome from Histology Images"
 requires-python = ">=3.10"
 dynamic = ["dependencies"]
 
@@ -13,7 +13,7 @@ dynamic = ["dependencies"]
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.packages.find]
-include = ["voice*", "predict*", "train*"]
+include = ["morph2mol*", "voice*", "predict*", "train*"]
 
 [tool.setuptools.package-data]
-"voice.scgpt_backend" = ["LICENSE", "NOTICE.md"]
+"morph2mol.scgpt_backend" = ["LICENSE", "NOTICE.md"]

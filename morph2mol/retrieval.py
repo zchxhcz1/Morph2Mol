@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from voice.bank_io import ARTIFACTS, SCHEMA, close_array, fingerprint, require
+from morph2mol.bank_io import ARTIFACTS, SCHEMA, close_array, fingerprint, require
 
 TAU = 0.03
 
@@ -81,7 +81,7 @@ class ReferenceBank:
         torch.backends.cudnn.allow_tf32 = False
         directory = Path(directory)
         self.model = json.loads((directory / 'model.json').read_text())
-        require(self.model.get('schema') == SCHEMA, 'Unsupported bank schema')
+        require(self.model.get('schema') in (SCHEMA, 'voice25m-reference-bank'), 'Unsupported bank schema')
         identity = {k: v for k, v in self.model.items() if k != 'cache_fingerprint'}
         require(fingerprint(identity) == self.model['cache_fingerprint'], 'Bank model fingerprint mismatch')
         require(self.model['target_size'] == 100, 'Expected a cluster target size of 100 cells')
