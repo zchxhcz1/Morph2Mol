@@ -75,13 +75,13 @@ python predict/predict.py --image /path/to/image.png --mpp 0.25 \
 | `--save-embeddings` | Save image and spatial features |
 | `--workers 4` | Set CPU workers for loading cell crops |
 | `--enc-chunk 32 --query-batch 64` | Reduce transient GPU memory use |
-| `--sample-id SAMPLE --exclude RELATED_SAMPLE` | Exclude the target and related references when they occur in the bank |
+| `--exclude object_00 object_01` | Exclude specific reference objects by their bank IDs |
 
 CUDA is the default device. CPU inference is available with `--device cpu --amp fp32`. Prediction matrices are written to disk in batches; output size scales with the number of cells and requested genes. Automatic segmentation produces nuclei; use supplied cell boundaries when available.
 
 ## Fusion weights
 
-Fusion weights cover all 15 reference organs: bone, brain, breast, cervix, colon, heart, kidney, liver, lung, lymph_node, ovary, pancreas, prostate, skin and tonsil. The [model repository](https://huggingface.co/zchx/Morph2Mol#fusion-weights) lists all 20 available organ/panel groups, including groups with one reference slide. Fitting retrieves from the other reference slides across tissues, excluding the query reference and its related donor/block samples.
+Fusion weights cover all 15 reference organs: bone, brain, breast, cervix, colon, heart, kidney, liver, lung, lymph_node, ovary, pancreas, prostate, skin and tonsil. The [model repository](https://huggingface.co/zchx/Morph2Mol#fusion-weights) lists all 20 available organ/panel groups. Fitting retrieves from the other reference slides across tissues, excluding the query reference and its related donor/block samples.
 
 Groups use organ names such as `lung/narrow` and `lung/wide`. `narrow` means fewer than 1,000 measured model genes in the fitting reference; `wide` means at least 1,000. With an organ alone, width is selected from the number of requested output genes. Supply an explicit group to keep that choice fixed when changing the requested gene subset. A missing width uses another available width of the same organ; an omitted or unknown organ uses global weights.
 
