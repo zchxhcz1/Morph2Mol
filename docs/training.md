@@ -44,16 +44,18 @@ python train/embed_scgpt.py --dataset /data/corpus \
 
 The extractor uses nonzero genes, a classification token, 51 expression bins, at most 1,200 tokens, and normalized 512-dimensional cell features. `--only sample_a,sample_b` and sharding options support processing subsets.
 
-Create the ordered gene-embedding table and model gene space:
+Create the gene embeddings and model gene space for the released 18,580-gene prediction head:
 
 ```bash
-python train/build_gene_table.py --dataset /data/corpus \
+python train/build_gene_table.py \
   --scgpt-dir /models/scgpt_human --out /runs/gene_table.npz
 python train/prepare.py --dataset /data/corpus --work-dir /runs/morph2mol \
   --gene-table /runs/gene_table.npz
 ```
 
-The gene list is the sorted union of genes measured in the training split. Held-out slides do not contribute genes. Gene embeddings use scGPT's embedding layer followed by encoder layer normalization. Symbols are matched exactly, then without case sensitivity. Genes outside the vocabulary remain in the output space, start with zero embeddings and can be learned by the expression head. To reproduce an existing gene head, use `--genes weights/genes.tsv` instead of `--dataset`. A different ordered gene list requires a corresponding model head, bank, and fitted fusion weights.
+By default, the first command reads the repository's `weights/genes.tsv` in file order. This is equivalent to passing `--genes weights/genes.tsv` from the repository root. Gene embeddings use scGPT's embedding layer followed by encoder layer normalization. Symbols are matched exactly, then without case sensitivity. Genes outside the scGPT vocabulary retain their output positions and start with zero embeddings that the expression head can learn during training.
+
+For a custom head, supply an ordered list with `--genes FILE` or derive one from a prepared training split with `--dataset DIR`. A custom vocabulary requires a matching prediction head, reference bank and fitted fusion weights.
 
 ## Align image and RNA features
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Build gene embeddings for the union of genes measured in the training corpus."""
+"""Build scGPT embeddings in the order of the Morph2Mol prediction head."""
 from pathlib import Path
 import argparse
 import csv
@@ -50,9 +50,10 @@ def gene_embeddings(genes, state, vocab):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    source=p.add_mutually_exclusive_group(required=True)
-    source.add_argument('--dataset',help='Prepared corpus; uses the sorted union of all training-set genes')
-    source.add_argument('--genes',help='Explicit ordered symbols for reproducing an existing gene head')
+    source=p.add_mutually_exclusive_group()
+    source.add_argument('--dataset',help='Build a custom head from genes in the supplied training split')
+    source.add_argument('--genes',type=Path,default=Path(__file__).resolve().parents[1] / 'weights' / 'genes.tsv',
+                        help='Ordered gene symbols, one per line (default: repository weights/genes.tsv)')
     p.add_argument('--scgpt-dir',required=True,help='best_model.pt and vocab.json')
     p.add_argument('--out',required=True)
     a=p.parse_args()
