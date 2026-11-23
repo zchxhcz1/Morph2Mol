@@ -6,8 +6,7 @@ OpenSlide installed, and a user who has SVS gets a message naming the package in
 
 `SlideReader.crops()` returns crops already resized to the encoder's input size, so the caller never has to know
 the source resolution: it passes the crop side in SOURCE pixels (from `geometry.crop_px_for(mpp)`) and gets back
-uint8 [n, 3, 224, 224]. Cells whose crop would fall outside the image are zero-padded rather than dropped, so the
-output row order always matches the input cell order.
+uint8 [n, 3, 224, 224]. Cell crops use white RGB padding outside the slide and Lanczos resampling.
 """
 from __future__ import annotations
 import numpy as np
@@ -73,9 +72,9 @@ class SlideReader:
                     pass
         return None
 
-    def region(self, x0: int, y0: int, side: int) -> np.ndarray:
-        """uint8 [side, side, 3], zero-padded where the window leaves the image."""
-        out = np.zeros((side, side, 3), np.uint8)
+    def region(self, x0: int, y0: int, side: int, *, fill: int = 0) -> np.ndarray:
+        """Read an RGB window, padding each channel with fill outside the image."""
+        out = np.full((side, side, 3), fill, dtype=np.uint8)
         xs, ys = max(0, x0), max(0, y0)
         xe, ye = min(self.width, x0 + side), min(self.height, y0 + side)
         if xe <= xs or ye <= ys:
@@ -94,9 +93,9 @@ class SlideReader:
         half = side // 2
         out = np.empty((len(cx), 3, output_size, output_size), np.uint8)
         for i, (x, y) in enumerate(zip(np.asarray(cx), np.asarray(cy))):
-            reg = self.region(int(round(x)) - half, int(round(y)) - half, side)
+            reg = self.region(int(round(x)) - half, int(round(y)) - half, side, fill=255)
             if side != output_size:
-                reg = np.asarray(Image.fromarray(reg).resize((output_size, output_size), Image.BILINEAR))
+                reg = np.asarray(Image.fromarray(reg).resize((output_size, output_size), Image.Resampling.LANCZOS))
             out[i] = np.ascontiguousarray(reg.transpose(2, 0, 1))
         return out
 
